@@ -11,7 +11,10 @@ import SwiftUI
 struct MintoakTest1App: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            NavigationStack{
+                HomeView()
+                    .preferredColorScheme(.light)
+            }
         }
     }
 }
