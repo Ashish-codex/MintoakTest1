@@ -18,7 +18,7 @@ struct FilterView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             VStack(spacing: 20) {
                 Text("Apply Filter")
                     .font(.title3)
@@ -26,9 +26,7 @@ struct FilterView: View {
                     .padding(.top, 16)
                 
                 // Selected company
-                Button(action: {
-                    vmFilter.onApplyCategoryFilter()
-                }) {
+                Button(action: {}) {
                     Text("\(vmFilter.currentSelectedCompany?.companyName ?? "")")
                         .font(.headline)
                         .foregroundColor(.white)
@@ -83,26 +81,11 @@ struct FilterView: View {
                 
                 
                 
-                NavigationLink {
-                    MIDListView()
-                        .environmentObject(vmFilter)
-                } label: {
-                    
-                    Text("APPLY")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(8)
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 10)
-//                
-//                Button(action: {
-//                    vmFilter.onApplyCategoryFilter()
-//                    path.append("MIDListView")
-//                }) {
+//                NavigationLink {
+//                    MIDListView()
+//                        .environmentObject(vmFilter)
+//                } label: {
+//                    
 //                    Text("APPLY")
 //                        .font(.headline)
 //                        .foregroundColor(.white)
@@ -113,25 +96,44 @@ struct FilterView: View {
 //                }
 //                .padding(.horizontal)
 //                .padding(.bottom, 10)
+//                
+                Button(action: {
+//                    vmFilter.onApplyCategoryFilter()
+                    DispatchQueue.main.async {
+                        path.append("MIDListView")
+                    }
+                }) {
+                    Text("APPLY")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(8)
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 10)
             }
             .sheet(isPresented: $vmFilter.showSheet) {
                 SelectLocationView()
-                    .environmentObject(vmFilter)
+//                    .environmentObject(vmFilter)
                     
             }
             
         }
-//        .navigationDestination(for: String.self, destination: { val in
-//            if val == "MIDListView"{
-//                MIDListView()
-//            }
-//        })
+        .navigationDestination(for: String.self, destination: { val in
+            if val == "MIDListView"{
+                MIDListView()
+                    
+            }
+        })
+//        .environmentObject(vmFilter)
         .onAppear {
             vmFilter.updateSelectedCompany(index: selectedIndex)
             vmFilter.setupCategoryElements()
             vmFilter.onApplyCategoryFilter()
         }
-//        .environmentObject(vmFilter)
+        
         
         
     }

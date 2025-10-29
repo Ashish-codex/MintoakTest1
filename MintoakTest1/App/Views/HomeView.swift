@@ -9,7 +9,7 @@ import SwiftUI
 
 struct HomeView: View {
     
-    @StateObject var vm = FilterViewModel()
+    @EnvironmentObject var vm: FilterViewModel
     
     var body: some View {
         
@@ -25,7 +25,7 @@ struct HomeView: View {
                 ForEach( Array(vm.arrFilterData.enumerated()), id: \.offset) { (index, data) in
                     NavigationLink {
                         FilterView(selectedIndex: index)
-                            .environmentObject(vm)
+//                            .environmentObject(vm)
                     } label: {
                         Text("\(data.companyName)")
                     }

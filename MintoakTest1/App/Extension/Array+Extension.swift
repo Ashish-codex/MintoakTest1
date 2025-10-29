@@ -18,7 +18,7 @@ extension Array where Element: Hashable {
 extension Array where Element == String {
     func unique() -> [String] {
         var seen = Set<String>()
-        return filter { seen.insert($0).inserted }
+        return filter { seen.insert($0.trimmed()).inserted }
     }
 }
 

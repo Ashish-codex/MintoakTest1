@@ -9,12 +9,16 @@ import SwiftUI
 
 @main
 struct MintoakTest1App: App {
+    
+    @StateObject var vm = FilterViewModel()
+    
     var body: some Scene {
         WindowGroup {
             NavigationStack{
                 HomeView()
                     .preferredColorScheme(.light)
             }
+            .environmentObject(vm)
         }
     }
 }

@@ -53,15 +53,15 @@ struct SelectLocationView: View {
             List {
                 
                 if vmFilter.categoryType == .account{
-                    ForEach(Array(vmFilter.arrAccountCategory.enumerated()), id: \.offset ) { (index, data) in
+                    ForEach(Array(vmFilter.arrTempAccountCategory.enumerated()), id: \.offset ) { (index, data) in
                         
                         Button {
-                            vmFilter.arrAccountCategory[index].isSelected.toggle()
+                            vmFilter.arrTempAccountCategory[index].isSelected.toggle()
                         } label: {
                             HStack {
-                                Image(systemName: vmFilter.arrAccountCategory[index].isSelected ? "checkmark.square.fill" : "square")
+                                Image(systemName: vmFilter.arrTempAccountCategory[index].isSelected ? "checkmark.square.fill" : "square")
                                     .foregroundColor(.orange)
-                                Text(vmFilter.arrAccountCategory[index].name)
+                                Text(vmFilter.arrTempAccountCategory[index].name)
                                     .foregroundColor(.primary)
                             }
                         }
@@ -72,15 +72,15 @@ struct SelectLocationView: View {
                 
                 if vmFilter.categoryType == .brand{
                     
-                    ForEach(Array(vmFilter.arrBrandCategory.enumerated()), id: \.offset ) { (index, data) in
+                    ForEach(Array(vmFilter.arrTempBrandCategory.enumerated()), id: \.offset ) { (index, data) in
                         
                         Button {
-                            vmFilter.arrBrandCategory[index].isSelected.toggle()
+                            vmFilter.arrTempBrandCategory[index].isSelected.toggle()
                         } label: {
                             HStack {
-                                Image(systemName: vmFilter.arrBrandCategory[index].isSelected ? "checkmark.square.fill" : "square")
+                                Image(systemName: vmFilter.arrTempBrandCategory[index].isSelected ? "checkmark.square.fill" : "square")
                                     .foregroundColor(.orange)
-                                Text(vmFilter.arrBrandCategory[index].name)
+                                Text(vmFilter.arrTempBrandCategory[index].name)
                                     .foregroundColor(.primary)
                             }
                         }
@@ -92,18 +92,18 @@ struct SelectLocationView: View {
                 
                 if vmFilter.categoryType == .location{
                     
-                    ForEach(Array(vmFilter.arrLocationCategory.enumerated()), id: \.offset ) { (
+                    ForEach(Array(vmFilter.arrTempLocationCategory.enumerated()), id: \.offset ) { (
                         index,
                         data
                     ) in
                         
                         Button {
-                            vmFilter.arrLocationCategory[index].isSelected.toggle()
+                            vmFilter.arrTempLocationCategory[index].isSelected.toggle()
                         } label: {
                             HStack {
-                                Image(systemName: vmFilter.arrLocationCategory[index].isSelected ? "checkmark.square.fill" : "square")
+                                Image(systemName: vmFilter.arrTempLocationCategory[index].isSelected ? "checkmark.square.fill" : "square")
                                     .foregroundColor(.orange)
-                                Text(vmFilter.arrLocationCategory[index].name)
+                                Text(vmFilter.arrTempLocationCategory[index].name)
                                     .foregroundColor(.primary)
                             }
                         }
@@ -117,8 +117,9 @@ struct SelectLocationView: View {
             // Apply button
             Button(action: {
                 dismiss()
-                vmFilter.updateSelectedCategoryElementCount()
+                vmFilter.setTempOrMainCategoryArray(categoryType: vmFilter.categoryType, isTemp: false)
                 vmFilter.onApplyFiltersInPriorityOrder()
+
             }) {
                 Text("APPLY")
                     .font(.headline)
@@ -134,6 +135,7 @@ struct SelectLocationView: View {
         .padding(.top, 20)
         .onAppear(perform: {
             print("categrory type = \(vmFilter.categoryType)")
+            vmFilter.setTempOrMainCategoryArray(categoryType: vmFilter.categoryType, isTemp: true)
         })
         .onDisappear {
             vmFilter.showSheet = false
@@ -143,15 +145,15 @@ struct SelectLocationView: View {
     
     private var allSelected: Bool {
         if vmFilter.categoryType == .account{
-            return vmFilter.arrAccountCategory.allSatisfy { $0.isSelected }
+            return vmFilter.arrTempAccountCategory.allSatisfy { $0.isSelected }
         }
         
         if vmFilter.categoryType == .brand{
-            return vmFilter.arrBrandCategory.allSatisfy { $0.isSelected }
+            return vmFilter.arrTempBrandCategory.allSatisfy { $0.isSelected }
         }
         
         if vmFilter.categoryType == .location{
-            return vmFilter.arrLocationCategory.allSatisfy { $0.isSelected }
+            return vmFilter.arrTempLocationCategory.allSatisfy { $0.isSelected }
         }
         
         return true
@@ -161,20 +163,20 @@ struct SelectLocationView: View {
         let newState = !allSelected
         
         if vmFilter.categoryType == .account{
-            for i in vmFilter.arrAccountCategory.indices{
-                vmFilter.arrAccountCategory[i].isSelected = newState
+            for i in vmFilter.arrTempAccountCategory.indices{
+                vmFilter.arrTempAccountCategory[i].isSelected = newState
             }
         }
         
         if vmFilter.categoryType == .brand{
-            for i in vmFilter.arrBrandCategory.indices{
-                vmFilter.arrBrandCategory[i].isSelected = newState
+            for i in vmFilter.arrTempBrandCategory.indices{
+                vmFilter.arrTempBrandCategory[i].isSelected = newState
             }
         }
         
         if vmFilter.categoryType == .location{
-            for i in vmFilter.arrLocationCategory.indices{
-                vmFilter.arrLocationCategory[i].isSelected = newState
+            for i in vmFilter.arrTempLocationCategory.indices{
+                vmFilter.arrTempLocationCategory[i].isSelected = newState
             }
         }
     }

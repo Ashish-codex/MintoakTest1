@@ -23,11 +23,19 @@ class FilterViewModel: ObservableObject{
     @Published var arrAccountCategory: [ModelSelectElement] = []
     @Published var arrBrandCategory: [ModelSelectElement] = []
     @Published var arrLocationCategory: [ModelSelectElement] = []
+    
+    /// For updating options selection
+    @Published var arrTempAccountCategory: [ModelSelectElement] = []
+    @Published var arrTempBrandCategory: [ModelSelectElement] = []
+    @Published var arrTempLocationCategory: [ModelSelectElement] = []
+    
+    
     @Published var arrMID: [String] = []
     
     
     // Priority order: first element = priority 1, second = priority 2, and so on
     @Published var arrPrioritizeCategory: [EnumCategoryType] = []
+    var filteredHierarchy: [ModelFilterData.Hierarchy] = []
     
     
     init(){
@@ -38,10 +46,11 @@ class FilterViewModel: ObservableObject{
     
     func updateSelectedCompany(index: Int){
         currentSelectedCompany = arrFilterData[index]
+        filteredHierarchy = currentSelectedCompany?.hierarchy ?? []
         
-        selectedAccount = currentSelectedCompany?.accountList.count ?? 0
-        selectedBrand = currentSelectedCompany?.brandList.count ?? 0
-        selectedLocations = currentSelectedCompany?.locationList.count ?? 0
+//        selectedAccount = currentSelectedCompany?.accountList.count ?? 0
+//        selectedBrand = currentSelectedCompany?.brandList.count ?? 0
+//        selectedLocations = currentSelectedCompany?.locationList.count ?? 0
     }
     
     func updateSelectedCategoryElementCount(){
@@ -64,7 +73,6 @@ class FilterViewModel: ObservableObject{
     // Apply filters step-by-step based on priority array
     func onApplyFiltersInPriorityOrder(){
         arrPrioritizeCategory.append(categoryType)
-        var filteredHierarchy = currentSelectedCompany?.hierarchy ?? []
         
         for category in arrPrioritizeCategory{
             
@@ -85,11 +93,17 @@ class FilterViewModel: ObservableObject{
                     
                         let matchingBrands = account.brandNameList.filter { selectedBrands.containsIgnoringWhitespace($0.brandName) }
                         
-                        guard !matchingBrands.isEmpty else {
-                            return ModelFilterData.Hierarchy(accountNumber: "", brandNameList: [])
+                        if !matchingBrands.isEmpty{
+                            return ModelFilterData.Hierarchy(accountNumber: account.accountNumber, brandNameList: matchingBrands)
+                        }else{
+                            return nil
                         }
                         
-                        return ModelFilterData.Hierarchy(accountNumber: account.accountNumber, brandNameList: matchingBrands)
+//                        guard !matchingBrands.isEmpty else {
+//                            return nil //ModelFilterData.Hierarchy(accountNumber: "", brandNameList: [])
+//                        }
+//                        
+//                        return ModelFilterData.Hierarchy(accountNumber: account.accountNumber, brandNameList: matchingBrands)
                          
                     }
                 }
@@ -109,22 +123,34 @@ class FilterViewModel: ObservableObject{
                             // if matchingLocations found
                             let matchingLocations = brand.locationNameList.filter { selectedLocations.containsIgnoringWhitespace($0.locationName) }
                             
-                            guard !matchingLocations.isEmpty else {
-                                return ModelFilterData.BrandNameList(brandName: "", locationNameList: [])
+                            if !matchingLocations.isEmpty{
+                                return ModelFilterData.BrandNameList(brandName: brand.brandName, locationNameList: matchingLocations)
+                            }else {
+                                return nil
                             }
-                            return ModelFilterData.BrandNameList(brandName: brand.brandName, locationNameList: matchingLocations)
                             
+//                            guard !matchingLocations.isEmpty else {
+//                                return ModelFilterData.BrandNameList(brandName: "", locationNameList: [])
+//                            }
+//                            return ModelFilterData.BrandNameList(brandName: brand.brandName, locationNameList: matchingLocations)
+//                            
                         }
                         
-                        guard !filteredBrands.isEmpty else {
-                            return ModelFilterData.Hierarchy(accountNumber: "", brandNameList: [])
+                        if !filteredBrands.isEmpty{
+                            return ModelFilterData.Hierarchy(accountNumber: account.accountNumber, brandNameList: filteredBrands)
+                        }else{
+                            return nil
                         }
                         
-                        return ModelFilterData
-                            .Hierarchy(
-                                accountNumber: account.accountNumber,
-                                brandNameList: filteredBrands
-                            )
+//                        guard !filteredBrands.isEmpty else {
+//                            return ModelFilterData.Hierarchy(accountNumber: "", brandNameList: [])
+//                        }
+//                        
+//                        return ModelFilterData
+//                            .Hierarchy(
+//                                accountNumber: account.accountNumber,
+//                                brandNameList: filteredBrands
+//                            )
                     }
                     
                 }
@@ -138,25 +164,32 @@ class FilterViewModel: ObservableObject{
             updateAvailableOptions(from: filteredHierarchy, excluding: category)
         }
         
-        
+        //Once the existing array is updated then updates the count of selected options
+        updateSelectedCategoryElementCount()
     }
     
-    // After applying priority filter, update the existing list that is available on screen
-    private func updateAvailableOptions(
-        from filtered: [ModelFilterData.Hierarchy],
-        excluding: EnumCategoryType
-    ) {
+    
+    
+    /* If The user selects any category for the first time from Account, brand, Locations then assign first priority to that category and based on that filter another two category data. And when user selecte the second category applies the same...
+    */
+    private func updateAvailableOptions(from filtered: [ModelFilterData.Hierarchy], excluding: EnumCategoryType) {
+        
+        /** Here excluding the prioritize categroy and update the remaining categroy **/
+        
         if excluding != .account {
             let availableAccounts = filtered.map { $0.accountNumber }
 //                .unique()
-            
             arrAccountCategory = mergeUpdatedNameAndPreserveSelection(arrExisting: arrAccountCategory, arrUpdatedNames: availableAccounts)
         }
+        
+        
         if excluding != .brand {
             let availableBrands = filtered.flatMap { $0.brandNameList.map { $0.brandName } }
 //                .unique()
             arrBrandCategory = mergeUpdatedNameAndPreserveSelection(arrExisting: arrBrandCategory, arrUpdatedNames: availableBrands)
         }
+        
+        
         if excluding != .location {
             let availableLocations = filtered.flatMap { $0.brandNameList.flatMap { $0.locationNameList.map { $0.locationName } } }
 //                .unique()
@@ -170,13 +203,31 @@ class FilterViewModel: ObservableObject{
      2.arrUpdatedNames(which having updated names or options that is getting form main hierarchy array
     */
     private func mergeUpdatedNameAndPreserveSelection(arrExisting: [ModelSelectElement], arrUpdatedNames: [String]) -> [ModelSelectElement] {
-        let existingMap = Dictionary(uniqueKeysWithValues: arrExisting.map { ($0.name.trimmed(), $0.isSelected) })
         
+        var remainingExisting = arrExisting
+
         return arrUpdatedNames.map { name in
-            let trimmed = name.trimmed()
-            let previouslySelected = existingMap[trimmed] ?? false
-            return ModelSelectElement(name: name, isSelected: previouslySelected)
+            let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            // Find the first matching existing element (preserve duplicate order)
+            if let index = remainingExisting.firstIndex(where: { $0.name.trimmed() == trimmed }) {
+                let isSelected = remainingExisting[index].isSelected
+                // Remove matched element so duplicates map correctly
+                remainingExisting.remove(at: index)
+                return ModelSelectElement(name: name, isSelected: isSelected)
+            } else {
+                // No previous selection found — default false
+                return ModelSelectElement(name: name, isSelected: false)
+            }
         }
+        
+//        let existingMap = Dictionary(uniqueKeysWithValues: arrExisting.map { ($0.name.trimmed(), $0.isSelected) })
+//        
+//        return arrUpdatedNames.map { name in
+//            let trimmed = name.trimmed()
+//            let previouslySelected = existingMap[trimmed] ?? false
+//            return ModelSelectElement(name: name, isSelected: previouslySelected)
+//        }
     }
     
     
@@ -200,33 +251,82 @@ class FilterViewModel: ObservableObject{
         currentSelectedCompany?.locationList.forEach({ data in
             arrLocationCategory.append(ModelSelectElement(name: data, isSelected: true))
         })
+        
+        
+        updateSelectedCategoryElementCount()
     }
     
     func onApplyCategoryFilter(){
         
         arrMID.removeAll()
-        
-        for account in (currentSelectedCompany?.hierarchy ?? []) {
-            guard arrAccountCategory
-                .contains(where: { $0.isSelected && $0.name == account.accountNumber }) else {
-                continue
-            }
-            
-            for brand in account.brandNameList {
-                guard arrBrandCategory.contains(where: { $0.isSelected && $0.name.lowercased().trimmingCharacters(in: .whitespaces) == brand.brandName.lowercased().trimmingCharacters(in: .whitespaces) }) else { continue }
-                
-                for loc in brand.locationNameList{
-                    guard arrLocationCategory.contains(where: {  $0.isSelected && $0.name.lowercased().trimmingCharacters(in: .whitespaces) == loc.locationName.lowercased().trimmingCharacters(in: .whitespaces) }) else { continue }
-                    
-                    
-                    for merchant in loc.merchantNumber{
-                        arrMID.append(merchant.mid)
-                    }
-                    
+        arrMID = filteredHierarchy.flatMap { account in
+            account.brandNameList.flatMap { brand in
+                brand.locationNameList.flatMap { location in
+                    location.merchantNumber.map { $0.mid }
                 }
             }
         }
+//        .unique()
+        
+        
+
+//        for account in (currentSelectedCompany?.hierarchy ?? []) {
+//            guard arrAccountCategory
+//                .contains(where: { $0.isSelected && $0.name == account.accountNumber }) else {
+//                continue
+//            }
+//            
+//            for brand in account.brandNameList {
+//                guard arrBrandCategory.contains(where: { $0.isSelected && $0.name.lowercased().trimmingCharacters(in: .whitespaces) == brand.brandName.lowercased().trimmingCharacters(in: .whitespaces) }) else { continue }
+//                
+//                for loc in brand.locationNameList{
+//                    guard arrLocationCategory.contains(where: {  $0.isSelected && $0.name.lowercased().trimmingCharacters(in: .whitespaces) == loc.locationName.lowercased().trimmingCharacters(in: .whitespaces) }) else { continue }
+//                    
+//                    
+//                    for merchant in loc.merchantNumber{
+//                        arrMID.append(merchant.mid)
+//                    }
+//                    
+//                }
+//            }
+//        }
     }
+    
+    
+    func setTempOrMainCategoryArray(categoryType: EnumCategoryType, isTemp: Bool){
+        switch categoryType{
+            
+        case .account:
+            if isTemp{
+                arrTempAccountCategory = arrAccountCategory
+            }else{
+                arrAccountCategory = arrTempAccountCategory
+            }
+            break
+            
+        case .brand:
+            if isTemp{
+                arrTempBrandCategory = arrBrandCategory
+            }else{
+                arrBrandCategory = arrTempBrandCategory
+            }
+            break
+            
+        case .location:
+            if isTemp{
+                arrTempLocationCategory = arrLocationCategory
+            }else{
+                arrLocationCategory = arrTempLocationCategory
+            }
+            break
+            
+        case .none:
+            break
+            
+            
+        }
+    }
+    
     
     
     private func loadJsonData(fileName:String){
