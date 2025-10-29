@@ -11,14 +11,23 @@ import SwiftUI
 struct MintoakTest1App: App {
     
     @StateObject var vm = FilterViewModel()
+    @ObservedObject var router = Router()
+    
     
     var body: some Scene {
         WindowGroup {
-            NavigationStack{
+            NavigationStack(path: $router.navPath){
                 HomeView()
+                    .navigationDestination(for: Router.EnumRouter.self, destination: { destination in
+                        switch destination {
+                        case .midScreen: MIDListView()
+                        case .filterScreen(let index): FilterView(selectedIndex: index)
+                        }
+                    })
                     .preferredColorScheme(.light)
             }
             .environmentObject(vm)
+            .environmentObject(router)
         }
     }
 }

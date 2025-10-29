@@ -28,14 +28,7 @@ struct SelectLocationView: View {
             .padding(.horizontal)
             .padding(.top, 10)
             
-            // Search bar
-//            TextField("Search for \(vmFilter.selecedElement)", text: $searchText)
-//                .padding(10)
-//                .background(Color(.systemGray6))
-//                .cornerRadius(8)
-//                .padding(.horizontal)
-            
-            // Select All + Clear
+
             HStack {
                 Button(action: toggleSelectAll) {
                     HStack {

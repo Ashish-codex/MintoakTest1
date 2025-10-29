@@ -10,7 +10,7 @@ import SwiftUI
 struct FilterView: View {
     
     @EnvironmentObject var vmFilter: FilterViewModel
-    @State private var path = NavigationPath()
+    @EnvironmentObject var router: Router
     
     let selectedIndex: Int
     init(selectedIndex: Int) {
@@ -18,122 +18,91 @@ struct FilterView: View {
     }
     
     var body: some View {
-        NavigationStack(path: $path) {
-            VStack(spacing: 20) {
-                Text("Apply Filter")
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .padding(.top, 16)
-                
-                // Selected company
-                Button(action: {}) {
-                    Text("\(vmFilter.currentSelectedCompany?.companyName ?? "")")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(8)
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 10)
-                
-                // Summary badges
-                HStack(spacing: 10) {
-                    FilterTagView(title: "Acc No.: \(vmFilter.selectedAccount)")
-                    FilterTagView(title: "Brand: \(vmFilter.selectedBrand)")
-                    FilterTagView(title: "Location: \(vmFilter.selectedLocations)")
-                    Spacer()
-                    Button("Clear") {
-                        vmFilter.clearCategoryFilter()
-                    }
-                    .foregroundColor(.gray)
-                }
-                .padding(.horizontal)
-                
-                // Filter rows
-                VStack(alignment: .leading, spacing: 16) {
-                    
-                    FilterRow(
-                        vmFilter: vmFilter,
-                        title: "Select Account Number",
-                        value: "\(vmFilter.selectedAccount)",
-                        categoryType: .account
-                    )
-                    FilterRow(
-                        vmFilter: vmFilter,
-                        title: "Select Brand",
-                        value: "\(vmFilter.selectedBrand)",
-                        categoryType: .brand
-                    )
-                    FilterRow(
-                        vmFilter: vmFilter,
-                        title: "Select Locations",
-                        value: "\(vmFilter.selectedLocations)",
-                        categoryType: .location
-                    )
-                }
-                .padding(.horizontal)
-                
-                Spacer()
-                
-                // Apply button
-                
-                
-                
-//                NavigationLink {
-//                    MIDListView()
-//                        .environmentObject(vmFilter)
-//                } label: {
-//                    
-//                    Text("APPLY")
-//                        .font(.headline)
-//                        .foregroundColor(.white)
-//                        .frame(maxWidth: .infinity)
-//                        .padding()
-//                        .background(Color.blue)
-//                        .cornerRadius(8)
-//                }
-//                .padding(.horizontal)
-//                .padding(.bottom, 10)
-//                
-                Button(action: {
-//                    vmFilter.onApplyCategoryFilter()
-                    DispatchQueue.main.async {
-                        path.append("MIDListView")
-                    }
-                }) {
-                    Text("APPLY")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(8)
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 10)
-            }
-            .sheet(isPresented: $vmFilter.showSheet) {
-                SelectLocationView()
-//                    .environmentObject(vmFilter)
-                    
-            }
+        
+        VStack(spacing: 20) {
+            Text("Apply Filter")
+                .font(.title3)
+                .fontWeight(.semibold)
+                .padding(.top, 16)
             
-        }
-        .navigationDestination(for: String.self, destination: { val in
-            if val == "MIDListView"{
-                MIDListView()
-                    
+            // Selected company
+            Button(action: {}) {
+                Text("\(vmFilter.currentSelectedCompany?.companyName ?? "")")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .cornerRadius(8)
             }
-        })
-//        .environmentObject(vmFilter)
+            .padding(.horizontal)
+            .padding(.bottom, 10)
+            
+            // Summary badges
+            HStack(spacing: 10) {
+                FilterTagView(title: "Acc No.: \(vmFilter.selectedAccount)")
+                FilterTagView(title: "Brand: \(vmFilter.selectedBrand)")
+                FilterTagView(title: "Location: \(vmFilter.selectedLocations)")
+                Spacer()
+                Button("Clear") {
+                    vmFilter.clearCategoryFilter()
+                }
+                .foregroundColor(.gray)
+            }
+            .padding(.horizontal)
+            
+            // Filter rows
+            VStack(alignment: .leading, spacing: 16) {
+                
+                FilterRow(
+                    vmFilter: vmFilter,
+                    title: "Select Account Number",
+                    value: "\(vmFilter.selectedAccount)",
+                    categoryType: .account
+                )
+                FilterRow(
+                    vmFilter: vmFilter,
+                    title: "Select Brand",
+                    value: "\(vmFilter.selectedBrand)",
+                    categoryType: .brand
+                )
+                FilterRow(
+                    vmFilter: vmFilter,
+                    title: "Select Locations",
+                    value: "\(vmFilter.selectedLocations)",
+                    categoryType: .location
+                )
+            }
+            .padding(.horizontal)
+            
+            Spacer()
+            
+   
+            Button(action: {
+                vmFilter.onApplyCategoryFilter()
+                DispatchQueue.main.async {
+                    router.navigate(to: .midScreen)
+                }
+            }) {
+                Text("APPLY")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .cornerRadius(8)
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 10)
+        }
+        .sheet(isPresented: $vmFilter.showSheet) {
+            SelectLocationView()
+        }
         .onAppear {
             vmFilter.updateSelectedCompany(index: selectedIndex)
             vmFilter.setupCategoryElements()
-            vmFilter.onApplyCategoryFilter()
         }
-        
+
         
         
     }

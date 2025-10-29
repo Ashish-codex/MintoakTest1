@@ -72,6 +72,8 @@ class FilterViewModel: ObservableObject{
     
     // Apply filters step-by-step based on priority array
     func onApplyFiltersInPriorityOrder(){
+        
+        //Priorities can be assign by using array (i.e frist comes get first priority)
         arrPrioritizeCategory.append(categoryType)
         
         for category in arrPrioritizeCategory{
@@ -98,13 +100,6 @@ class FilterViewModel: ObservableObject{
                         }else{
                             return nil
                         }
-                        
-//                        guard !matchingBrands.isEmpty else {
-//                            return nil //ModelFilterData.Hierarchy(accountNumber: "", brandNameList: [])
-//                        }
-//                        
-//                        return ModelFilterData.Hierarchy(accountNumber: account.accountNumber, brandNameList: matchingBrands)
-                         
                     }
                 }
                 break
@@ -128,12 +123,6 @@ class FilterViewModel: ObservableObject{
                             }else {
                                 return nil
                             }
-                            
-//                            guard !matchingLocations.isEmpty else {
-//                                return ModelFilterData.BrandNameList(brandName: "", locationNameList: [])
-//                            }
-//                            return ModelFilterData.BrandNameList(brandName: brand.brandName, locationNameList: matchingLocations)
-//                            
                         }
                         
                         if !filteredBrands.isEmpty{
@@ -141,16 +130,6 @@ class FilterViewModel: ObservableObject{
                         }else{
                             return nil
                         }
-                        
-//                        guard !filteredBrands.isEmpty else {
-//                            return ModelFilterData.Hierarchy(accountNumber: "", brandNameList: [])
-//                        }
-//                        
-//                        return ModelFilterData
-//                            .Hierarchy(
-//                                accountNumber: account.accountNumber,
-//                                brandNameList: filteredBrands
-//                            )
                     }
                     
                 }
@@ -178,21 +157,21 @@ class FilterViewModel: ObservableObject{
         
         if excluding != .account {
             let availableAccounts = filtered.map { $0.accountNumber }
-//                .unique()
+
             arrAccountCategory = mergeUpdatedNameAndPreserveSelection(arrExisting: arrAccountCategory, arrUpdatedNames: availableAccounts)
         }
         
         
         if excluding != .brand {
             let availableBrands = filtered.flatMap { $0.brandNameList.map { $0.brandName } }
-//                .unique()
+
             arrBrandCategory = mergeUpdatedNameAndPreserveSelection(arrExisting: arrBrandCategory, arrUpdatedNames: availableBrands)
         }
         
         
         if excluding != .location {
             let availableLocations = filtered.flatMap { $0.brandNameList.flatMap { $0.locationNameList.map { $0.locationName } } }
-//                .unique()
+            
             arrLocationCategory = mergeUpdatedNameAndPreserveSelection(arrExisting: arrLocationCategory, arrUpdatedNames: availableLocations)
         }
     }
@@ -209,25 +188,17 @@ class FilterViewModel: ObservableObject{
         return arrUpdatedNames.map { name in
             let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
             
-            // Find the first matching existing element (preserve duplicate order)
+            
             if let index = remainingExisting.firstIndex(where: { $0.name.trimmed() == trimmed }) {
                 let isSelected = remainingExisting[index].isSelected
-                // Remove matched element so duplicates map correctly
-                remainingExisting.remove(at: index)
+            
+//                remainingExisting.remove(at: index)
                 return ModelSelectElement(name: name, isSelected: isSelected)
             } else {
-                // No previous selection found — default false
+            
                 return ModelSelectElement(name: name, isSelected: false)
             }
         }
-        
-//        let existingMap = Dictionary(uniqueKeysWithValues: arrExisting.map { ($0.name.trimmed(), $0.isSelected) })
-//        
-//        return arrUpdatedNames.map { name in
-//            let trimmed = name.trimmed()
-//            let previouslySelected = existingMap[trimmed] ?? false
-//            return ModelSelectElement(name: name, isSelected: previouslySelected)
-//        }
     }
     
     
@@ -266,7 +237,7 @@ class FilterViewModel: ObservableObject{
                 }
             }
         }
-//        .unique()
+
         
         
 

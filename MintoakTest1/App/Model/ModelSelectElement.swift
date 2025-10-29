@@ -17,3 +17,6 @@ struct ModelSelectElement {
 enum EnumCategoryType:String{
     case account, brand, location, none
 }
+
+
+

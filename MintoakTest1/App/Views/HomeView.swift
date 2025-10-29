@@ -10,6 +10,7 @@ import SwiftUI
 struct HomeView: View {
     
     @EnvironmentObject var vm: FilterViewModel
+    @EnvironmentObject var router: Router
     
     var body: some View {
         
@@ -23,18 +24,28 @@ struct HomeView: View {
             List{
                 
                 ForEach( Array(vm.arrFilterData.enumerated()), id: \.offset) { (index, data) in
-                    NavigationLink {
-                        FilterView(selectedIndex: index)
-//                            .environmentObject(vm)
+                    
+                    Button {
+                        router.navigate(to: .filterScreen(index: index))
                     } label: {
-                        Text("\(data.companyName)")
+                        HStack {
+                            Text("\(data.companyName)")
+                                .foregroundColor(.black)
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.gray)
+                        }
+                        .padding(.vertical, 7)
                     }
+
                 }
             
             }
             
         }
-//        .environmentObject(vm)
+
     }
 }
 
