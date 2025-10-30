@@ -26,9 +26,7 @@ extension String {
     func trimmed() -> String { trimmingCharacters(in: .whitespacesAndNewlines) }
 }
 
-//extension Array where Element == Hierarchy {
-//    // not used above but handy if you want compact filtering helpers
-//}
+
 
 extension Array where Element == String {
     func containsIgnoringWhitespace(_ other: String) -> Bool {
@@ -42,6 +40,3 @@ extension Collection where Element == String {
     }
 }
 
-extension Dictionary where Key == String, Value == Bool {
-    // nothing needed here — used in ViewModel
-}
